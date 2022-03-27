@@ -6,8 +6,7 @@ Flexible, powerful, templated configuration for Apache 2.4 on RHEL/CentOS/Amazon
 Requirements
 ------------
 
-This role relies on lsb core for detection of OS versions. Use ucf.ansible_role_lsb_core role prior to this one.<br>
-This role only creates apache configuration files. Apache will need to be installed prior to running this role.
+This role only creates apache configuration files. Apache will need to be installed prior to running this role. You can use `ucf.ansible_role_httpd24_install` to install apache if needed.
 
 Role Variables
 --------------
@@ -90,8 +89,7 @@ vhost_list:
 Dependencies
 ------------
 
-* ucf.ansible_role_lsb_core
-* ucf.ansible_role_httpd24_install
+None.
 
 Example Playbook
 ----------------
