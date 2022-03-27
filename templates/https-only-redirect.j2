@@ -1,0 +1,9 @@
+  # Security: HTTPS Redirect
+  <IfModule mod_rewrite.c>
+    RewriteEngine on	
+    RewriteCond %{HTTPS} !=on
+    RewriteCond %{HTTP:X-Forwarded-Proto} !=https [NC]
+    RewriteRule ^ https://%{SERVER_NAME}%{REQUEST_URI} [L,R=301]
+  </IfModule>
+  # Security: HSTS tell browser https only
+  Header always set Strict-Transport-Security "max-age=63072000"

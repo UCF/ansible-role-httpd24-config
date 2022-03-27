@@ -1,0 +1,5 @@
+<VirtualHost {{ apache_listen_ip }}:{{ apache_listen_port }}>
+        ServerAdmin webmaster@localhost
+        DocumentRoot /var/www/html
+        Header always set X-App-Name "Default"
+</VirtualHost>

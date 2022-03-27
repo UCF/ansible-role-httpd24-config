@@ -1,0 +1,21 @@
+{% if vhost.documentroot is defined %}
+{% set var_php_tmp_default = vhost.documentroot|regex_replace('(^.*)\/[a-zA-Z0-9\-\_]+\/?$', '\\1/tmp/') %}
+{% set var_php_session_default = vhost.documentroot|regex_replace('(^.*)\/[a-zA-Z0-9\-\_]+\/?$', '\\1/sessions/') %}
+{% if vhost.php_security_settings is defined %}
+  {% set var_php_tmp =  vhost.php_security_settings.php_tmp |default( var_php_tmp_default ) %}
+  {% set var_php_session = vhost.php_security_settings.php_sessions | default( var_php_session_default ) %}
+  {% set var_allow_url_fopen = vhost.php_security_settings.php_allow_url_fopen | default ('off') %}
+{% else %}
+  {% set var_php_tmp = var_php_tmp_default %}
+  {% set var_php_session = var_php_session_default %}
+  {% set var_allow_url_fopen = 'off' %}
+{% endif %}
+{% set var_open_basedir = vhost.documentroot + '/' + ':' + var_php_tmp + ':' + var_php_session %}
+  
+  # PHP Security Settings
+    php_admin_value open_basedir {{ var_open_basedir }}
+    php_admin_value upload_tmp_dir {{ var_php_tmp }}
+    php_admin_value session.save_path {{ var_php_session }}
+    php_admin_flag allow_url_fopen {{ var_allow_url_fopen }}
+
+{% endif %}

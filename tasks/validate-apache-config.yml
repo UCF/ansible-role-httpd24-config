@@ -1,0 +1,65 @@
+- name: "{{ {True:'Variable already set True', False:'For validation - set_fact True'}[httpd_conf_exclude_confd|default(False)|bool] }} to omit 'Include conf.d/*.conf' from httpd.conf"
+  set_fact:
+    httpd_conf_exclude_confd: yes
+  check_mode: no
+  changed_when: no
+  register: fact_httpd_conf_exclude_confd
+  when: not httpd_conf_exclude_confd|default(False)|bool
+
+- name: find all non vhost files in confd
+  find:
+    paths: "{{ apache_conf_root }}/conf.d/"
+    excludes: 'vhosts*.conf'
+    patterns: '*.conf'
+  register: non_vhost_confd_confs
+  when: not fact_httpd_conf_exclude_confd.skipped|default(False)|bool
+
+- name: create list of non vhost conf.d/*conf files to be included for validation.
+  set_fact:
+    non_vhost_confd_conf_paths: "{{ non_vhost_confd_confs.files|map(attribute='path')|list }}"
+  when: not fact_httpd_conf_exclude_confd.skipped|default(False)|bool
+
+- name: create apache "{{ apache_conf_root }}/validation.conf"
+  template:
+    src: 'vhosts-httpd-conf-combined.j2'
+    dest: "{{ apache_conf_root }}/validation.conf"
+    setype: "httpd_config_t"
+  register: create_validation_conf
+  check_mode: no
+  changed_when: no
+
+- name: validate apache configs
+  shell: "{{ apache_install_root }}usr/sbin/apachectl -t -f {{ apache_conf_root }}/validation.conf"
+  register: config_validation
+  check_mode: no
+  changed_when: no
+  failed_when: no
+
+- name: "{{ {True:'Validation did not change fact', False:'Cleanup - set_fact False'}[fact_httpd_conf_exclude_confd.skipped|default(False)|bool] }} to omit 'Include conf.d/*.conf' in template"
+  set_fact:
+    httpd_conf_exclude_confd: no
+  check_mode: no
+  changed_when: no
+  when: not fact_httpd_conf_exclude_confd.skipped|default(False)|bool
+
+- name: "validation result - ( Warnings will {{ {True:'fail/prevent deployment )', False:'NOT fail/prevent deployment )'}[apache_stop_cfg_on_validation_warning|default(False)|bool] }}"
+  debug:
+    msg: "{{ config_validation.stderr_lines }}"
+  failed_when:
+    - config_validation.rc !=0 or ( apache_stop_cfg_on_validation_warning|default(False)|bool and "'Warning' in config_validation.stderr" )
+  check_mode: no
+  changed_when: no
+
+- name: Cleanup - remove "{{ apache_conf_root }}/validation.conf"
+  file:
+    path: "{{ apache_conf_root }}/validation.conf"
+    state: absent
+  check_mode: no
+  changed_when: no
+
+- name: "enable apache service when validation is successful"
+  service:
+    name: "{{ apache_service_name }}"
+    enabled: yes
+  when:
+    - config_validation.rc ==0

@@ -1,0 +1,10 @@
+- name: find vhosts-*.conf files
+  find:
+    paths: "{{ apache_confd_path }}"
+    patterns: vhosts-*.conf
+  register: files_to_delete
+- name: remove vhosts-*.conf files
+  file:
+    path: "{{ item.path }}"
+    state: absent
+  with_items: "{{ files_to_delete.files }}"

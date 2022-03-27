@@ -1,0 +1,14 @@
+
+  # Security: prevent WP author enumeration
+  <IfModule mod_rewrite.c>
+    RewriteEngine on
+    #Block author query string.
+    RewriteCond %{REQUEST_URI}  ^/$
+    RewriteCond %{QUERY_STRING} author=.*
+    RewriteRule ^(.*)$ /? [L,R=301]
+    #Block user REST API enumeration.
+    RewriteCond %{REQUEST_METHOD} ^(GET|POST|PUT|PATCH|DELETE) [NC]
+    RewriteCond %{REQUEST_URI} ^.*wp-json/wp/v2/users(\/.*)? [NC]
+    RewriteRule ^(.*)$ /? [L,R=403]
+  </IfModule>
+

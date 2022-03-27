@@ -1,0 +1,7 @@
+{% if '.j2' in param %}
+{% include param %}
+
+{% else %}
+{{ param|indent(2,True) }}
+
+{% endif %}

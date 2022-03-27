@@ -1,0 +1,5 @@
+---
+# vars file for ucf.ansible_role_httpd24_config
+
+apache_listen_directives: []
+compiled_vhost_list: []

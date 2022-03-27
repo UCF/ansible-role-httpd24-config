@@ -1,0 +1,92 @@
+---
+# tasks file for ucf.ansible_role_httpd24_config
+- name: Apply ssl.conf
+  template:
+      dest: "{{ apache_install_root }}etc/httpd/conf.d/ssl.conf"
+      src: ssl.conf.j2
+      owner: root
+      group: root
+      setype: "httpd_config_t"
+      mode: 0644
+
+- name: add default vhost
+  include_tasks: add-default-vhost.yml
+
+- name: create compiled vhost list
+  include_tasks: create-compiled-vhost-list.yml
+  loop: "{{ vhost_list }}"
+  loop_control:
+    loop_var: vhost_cfg
+    label: "{{ 'compiling vhost: ' + vhost_cfg.name }}"
+
+- name: create apache listen directives
+  include_tasks: create-apache-listen-directives.yml
+
+- name: add selinux port rules for apache
+  include_tasks: allow-selinux-ports.yml
+
+- stat:
+    path: "{{ apache_confd_path }}"
+  register: check_confd_path
+  check_mode: no
+
+- name: validate apache config
+  include_tasks: validate-apache-config.yml
+  when:
+    - compiled_vhost_list is defined
+    - apache_listen_directives is defined
+    - check_confd_path.stat.exists
+
+- name: (option) delete existing vhosts
+  include_tasks: delete-vhosts-.conf.yml
+  when:
+    - delete_vhosts_conf|default(False)
+    - check_confd_path.stat.exists
+
+- name: deploy individual vhost files
+#  include_tasks: deploy-vhosts.1.yml
+  template:
+    src: 'vhosts.conf.j2'
+    dest: "{{ apache_confd_path }}/vhosts-{{ vhost.name }}.conf"
+    owner: root
+    group: root
+    setype: "httpd_config_t"
+    mode: 0644
+  loop: "{{ compiled_vhost_list }}"
+  loop_control:
+    loop_var: vhost
+    label: "{{ {True:'Combined vhost will contain ', False:'Deploying individual '}[apache_combine_vhosts|bool] + 'vhosts-' + vhost.name + '.conf'}}"
+  when:
+    - not apache_combine_vhosts|default(False)|bool
+    - compiled_vhost_list is defined
+    - apache_listen_directives is defined
+    - check_confd_path.stat.exists
+  notify: reload apache
+
+
+- name: deploy combined vhost file
+  template:
+    src: 'vhosts-combined.conf.j2'
+    dest: '{{ apache_confd_path }}/vhosts-combined.conf'
+    owner: root
+    group: root
+    setype: "httpd_config_t"
+    mode: 0644
+  when:
+    - apache_combine_vhosts|default(False)|bool
+    - compiled_vhost_list is defined
+    - apache_listen_directives is defined
+    - check_confd_path.stat.exists
+  notify: reload apache
+
+- name: deploy httpd.conf
+  include_tasks: 'deploy-httpd-conf.yml'
+  when:
+    - compiled_vhost_list is defined
+    - apache_listen_directives is defined
+    - check_confd_path.stat.exists
+
+- name: (option) restart apache upon variable being set for role
+  command: echo "Force restart Apache service."
+  when: apache_restart|default(False)
+  notify: restart apache

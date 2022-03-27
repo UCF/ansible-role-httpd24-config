@@ -1,0 +1,17 @@
+
+- name: "{{ vhost_cfg.name }} {{ {True:' - unify explicit and add_settings params', False:' - No add_settings to unify'}[vhost_cfg.add_settings is defined] }}" 
+  set_fact:
+    unified_params:
+      top_params: "{{vhost_cfg.add_settings.top_params| default([])|list | union(vhost_cfg.top_params | default([]) | list) }}"
+      directory_params: "{{vhost_cfg.add_settings.directory_params| default([])|list | union(vhost_cfg.directory_params | default([]) | list) }}"
+      bottom_params: "{{vhost_cfg.add_settings.bottom_params| default([])|list | union(vhost_cfg.bottom_params | default([]) | list) }}"
+  when: vhost_cfg.add_settings is defined
+
+- name: clear unified_params if vhost_cfg.add_settings is undefined
+  set_fact:
+    unified_params: {}
+  when: vhost_cfg.add_settings is undefined
+
+- name: "{{ vhost_cfg.name + ' - adding combined settings to the compiled_vhost_list' }}"
+  set_fact:
+    compiled_vhost_list: "{{ compiled_vhost_list + [vhost_cfg.add_settings|default({})|combine(vhost_cfg|combine(unified_params, recursive=True), recursive=True)] }}"

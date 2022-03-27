@@ -1,0 +1,12 @@
+
+- name: create apache_listen_directive
+  set_fact:
+    apache_listen_directive: 
+      - name: apache_listen
+        ip: '{{ apache_listen_ip }}'
+        port: '{{ apache_listen_port }}'
+
+- name: set listen_directives
+  set_fact: 
+    apache_listen_directives: "{{ vhost_list + apache_listen_directive }}"
+

@@ -1,0 +1,4 @@
+
+  RewriteEngine on
+  RewriteRule ^:{{ vhost.port|default(apache_listen_port) }}/(.*)$ /$1 [L]
+

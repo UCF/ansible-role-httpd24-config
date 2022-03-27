@@ -1,0 +1,66 @@
+
+<VirtualHost {{ vhost.ip|default(apache_listen_ip) }}:{{ vhost.port| default( apache_listen_port ) }}>
+  ServerName {{ vhost.servername }}
+{% if vhost.serveralias is defined %}
+  ServerAlias {{ vhost.serveralias }}
+{% endif %}
+{% if apache_serveradmin is defined or vhost.serveradmin is defined %}
+  ServerAdmin {{ vhost.serveradmin|default(apache_serveradmin) }}
+{% endif %}
+
+{% if vhost.log_file_name is defined %}
+  ErrorLog logs/{{ vhost.log_file_name }}-error_log
+  CustomLog logs/{{ vhost.log_file_name }}-access_log combined
+{% else %}
+  ErrorLog logs/{{ vhost.servername }}-error_log
+  CustomLog logs/{{ vhost.servername }}-access_log combined
+{% endif %}
+
+  # App Header
+  Header always set X-App-Name "{{ vhost.name }}"
+
+
+{% if vhost.documentroot is defined %}
+  DocumentRoot "{{ vhost.documentroot }}"
+{% endif %}
+
+{% if ( apache_x_forwarded_proto and vhost.x_forwarded_proto is undefined) or
+    ( vhost.x_forwarded_proto is defined and vhost.x_forwarded_proto ) %}
+  SetEnvIf X-Forwarded-Proto https HTTPS=on
+{% endif %}
+
+{% if vhost.top_params is defined %}
+{% for param in vhost.top_params %}
+{% include 'parse_params.j2' %}
+{% endfor %}
+{% endif %}
+
+{% if vhost.documentroot is defined %}
+  <Directory "{{ vhost.documentroot }}">
+    AllowOverride {{ vhost.allow_override | default(apache_allow_override) }}
+    Options {{ vhost.options | default(apache_options) }}
+{% if apache_vhosts_version == "2.2" %}
+    Order allow,deny
+    Allow from all
+{% else %}
+    Require all granted
+{% endif %}
+
+{% if vhost.directory_params is defined %}
+{% for param in vhost.directory_params %}
+{% include 'parse_params.j2' %}
+{% endfor %}
+{% endif %}
+
+  </Directory>
+{% endif %}
+{% if vhost.bottom_params is defined %}
+{% for param in vhost.bottom_params %}
+{% include 'parse_params.j2' %}
+{% endfor %}
+{% endif %}
+
+  RedirectMatch 404 /\.git(/|$)
+  RedirectMatch 404 /\.gitignore(/|$)
+  RedirectMatch 404 /\.svn(/|$)
+</VirtualHost>
