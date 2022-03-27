@@ -1,4 +1,4 @@
-
+---
 - name: "{{ vhost_cfg.name }} {{ {True:' - unify explicit and add_settings params', False:' - No add_settings to unify'}[vhost_cfg.add_settings is defined] }}" 
   set_fact:
     unified_params:

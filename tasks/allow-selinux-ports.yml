@@ -1,3 +1,4 @@
+---
 - name: Ensure SELinux Ansible Prerequisites
   yum:
     name: ['libselinux-python', 'policycoreutils-python']
@@ -5,7 +6,12 @@
 
 - name: SELinux Allow apache user to bind port
   seport:
-    ports: "{{ apache_listen_directives | selectattr('port','defined') | map(attribute='port') | list | join(',') }}"
+    ports: >-
+      {{
+        apache_listen_directives |
+        selectattr('port','defined') |
+        map(attribute='port') | list | join(',')
+      }}
     proto: tcp
     setype: http_port_t
     state: present

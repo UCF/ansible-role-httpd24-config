@@ -1,3 +1,4 @@
+---
 - name: deploy 000-default-vhost.conf template
   template:
     src: '000-default-vhost.conf.j2'

@@ -7,8 +7,13 @@ apache24_listen_port: 9000
 apache_listen_port: "{{ apache24_listen_port }}"
 apache_serveradmin: root@localhost
 apache_allow_override: "All"
-apache_options:  "-Indexes -FollowSymLinks -ExecCGI"
-apache_x_apache_server: "{{ inventory_hostname|regex_replace('^([0-9a-zA-Z\\-]+)\\..*$','\\1')|upper +'-24'}}"
+apache_options: "-Indexes -FollowSymLinks -ExecCGI"
+apache_x_apache_server: |
+  "{{
+    inventory_hostname |
+    regex_replace('^([0-9a-zA-Z\\-]+)\\..*$','\\1') |
+    upper +'-24'
+  }}"
 
 apache_x_forwarded_proto: yes
 apache_install_root: '/opt/rh/httpd24/root/'
@@ -21,13 +26,15 @@ apache_combine_vhosts: False
 # Fail play when Apache Validation has Warnings
 apache_stop_cfg_on_validation_warning: False
 
-# undefined vhost_list will fail on hosts without a vhost_list which should be valid.
+# undefined vhost_list will fail on hosts without a vhost_list.
 # define empty vhost_list default
 vhost_list: []
 
 # Example vhost_list and additional default settings mysql_variables
 
-# example of additional settings that add specific templates to the vhost configuration
+# example of additional settings that add 
+# specific templates to the vhost configuration.
+#
 # swp_default_vhost_settings:
 #   top_params:
 #     - 'https-only-redirect.j2'
@@ -38,6 +45,8 @@ vhost_list: []
 #   bottom_params:
 #     - 'swp_default_rewrites.j2'
 
+# Example vhost_list.
+#
 # vhost_list:
 #   - name: basic-example
 #     servername: basic.ucf.edu

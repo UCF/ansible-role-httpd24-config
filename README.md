@@ -1,17 +1,14 @@
-ucf.ansible_role_httpd24_config
-=========
+# ucf.ansible_role_httpd24_config
 
 Flexible, powerful, templated configuration for Apache 2.4 on RHEL/CentOS/Amazon Linux
 
-Requirements
-------------
+## Requirements
 
 This role only creates apache configuration files. Apache will need to be installed prior to running this role. You can use `ucf.ansible_role_httpd24_install` to install apache if needed.
 
-Role Variables
---------------
+## Role Variables
 
-### Global Settings:
+### Global Settings
 ```yaml
 apache_vhosts_version: "2.4"
 apache_listen_ip: "{{ ansible_default_ipv4.address }}"
@@ -36,7 +33,7 @@ apache_stop_cfg_on_validation_warning: True
 <br>
 
 
-### Example of pre-defined vhost settings that can be merged into the vhost configuration in the `add_settings:` section of a vhost variable structure.<br>
+### Example of predefined vhost settings that can be merged into the vhost configuration in the `add_settings:` section of a vhost variable structure.<br>
 Note: This should be defined in a seperate variable file. You can not reference a variable defined in the same file.
 ```yaml
 swp_default_vhost_settings:
@@ -50,7 +47,7 @@ swp_default_vhost_settings:
     - 'swp_default_rewrites.j2'
 ```
 
-### Example vhost_list demonstrating vhost template variable structure.
+### Example `vhost_list` with vhost template variable structure
 ```yaml
 vhost_list:
   - name: basic-example
@@ -86,13 +83,11 @@ vhost_list:
     add_settings: "{{ swp_default_vhost_settings }}"
 ```
 
-Dependencies
-------------
+## Dependencies
 
 None.
 
-Example Playbook
-----------------
+## Example Playbook
 
 Including an example of how to use your role (for instance, with variables passed in as parameters) is always nice for users too:
 ```yaml
@@ -100,12 +95,11 @@ Including an example of how to use your role (for instance, with variables passe
       roles:
          - { role: ucf.ansible_role_httpd24_config }
 ```
-License
--------
+## License
 
 [MIT License](https://github.com/UCF/ansible-role-lsb-core/blob/master/LICENSE)
 
-Author Information
-------------------
+## Author Information
+
 
 Author(s): [Derek J. Bernard](https://github.com/derekjbernard), [Vinnie Vu](https://github.com/vinhtvu2)
