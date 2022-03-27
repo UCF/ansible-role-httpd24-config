@@ -1,4 +1,4 @@
-
+---
 - name: deploy httpd.conf template
   template:
     src: 'httpd.conf.j2'

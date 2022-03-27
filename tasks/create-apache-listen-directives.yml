@@ -9,4 +9,3 @@
 - name: set listen_directives
   set_fact: 
     apache_listen_directives: "{{ vhost_list + apache_listen_directive }}"
-

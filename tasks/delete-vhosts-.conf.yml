@@ -1,3 +1,4 @@
+---
 - name: find vhosts-*.conf files
   find:
     paths: "{{ apache_confd_path }}"

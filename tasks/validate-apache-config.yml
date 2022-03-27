@@ -1,3 +1,4 @@
+---
 - name: "{{ {True:'Variable already set True', False:'For validation - set_fact True'}[httpd_conf_exclude_confd|default(False)|bool] }} to omit 'Include conf.d/*.conf' from httpd.conf"
   set_fact:
     httpd_conf_exclude_confd: yes
